@@ -5,12 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
 class ProductController extends Controller
 {
+    public function __construct(
+        private ProductService $productService
+    ) {
+    }
 
 
     public function index(Request $request): View
@@ -45,10 +50,10 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
 
-        // Image upload will be handled by Service class
-        if ($request->hasFile('image')) {
-            $validated['image'] = $request->file('image')->store('products', 'public');
-        }
+        // Handle image upload using Service class
+        $validated['image'] = $this->productService->handleImageUpload(
+            $request->file('image')
+        );
 
         Product::create($validated);
 
@@ -56,7 +61,7 @@ class ProductController extends Controller
             ->with('success', 'Product created successfully.');
     }
 
-    
+
 
     public function edit(Product $product): View
     {
@@ -70,14 +75,11 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
 
-        // Image upload will be handled by Service class
-        if ($request->hasFile('image')) {
-            // Delete old image if exists
-            if ($product->image) {
-                \Storage::disk('public')->delete($product->image);
-            }
-            $validated['image'] = $request->file('image')->store('products', 'public');
-        }
+        // Handle image upload using Service class
+        $validated['image'] = $this->productService->handleImageUpload(
+            $request->file('image'),
+            $product->image
+        );
 
         $product->update($validated);
 
