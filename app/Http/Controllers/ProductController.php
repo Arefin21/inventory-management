@@ -7,8 +7,9 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProductController extends Controller
 {
@@ -18,7 +19,7 @@ class ProductController extends Controller
     }
 
 
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $query = Product::query();
 
@@ -32,16 +33,27 @@ class ProductController extends Controller
         }
 
         // Paginate results (10 per page)
-        $products = $query->latest()->paginate(10);
+        $products = $query->latest()->paginate(10)->withQueryString();
 
-        return view('products.index', compact('products'));
+        // Transform products to include image URLs
+        $products->getCollection()->transform(function ($product) {
+            $product->image_url = $product->image
+                ? asset('storage/' . $product->image)
+                : null;
+            return $product;
+        });
+
+        return Inertia::render('Products/Index', [
+            'products' => $products,
+            'filters' => $request->only(['search']),
+        ]);
     }
 
 
 
-    public function create(): View
+    public function create(): Response
     {
-        return view('products.create');
+        return Inertia::render('Products/Create');
     }
 
 
@@ -63,9 +75,15 @@ class ProductController extends Controller
 
 
 
-    public function edit(Product $product): View
+    public function edit(Product $product): Response
     {
-        return view('products.edit', compact('product'));
+        $product->image_url = $product->image
+            ? asset('storage/' . $product->image)
+            : null;
+
+        return Inertia::render('Products/Edit', [
+            'product' => $product,
+        ]);
     }
 
     /**
