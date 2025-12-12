@@ -129,23 +129,40 @@
 
         <!-- Delete Confirmation Dialog -->
         <Dialog v-model="deleteDialogOpen">
-            <DialogContent>
+            <DialogContent class="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Delete Product</DialogTitle>
-                    <DialogDescription>
-                        Are you sure you want to delete "{{ selectedProduct?.name }}"? This action cannot be undone.
-                    </DialogDescription>
+                    <div class="flex items-start gap-4">
+                        <div class="shrink-0 w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mt-1">
+                            <AlertTriangle class="w-6 h-6 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div class="flex-1">
+                            <DialogTitle class="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                                Delete Product
+                            </DialogTitle>
+                            <DialogDescription class="text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                                Are you sure you want to delete
+                                <span class="font-semibold text-gray-900 dark:text-gray-100">"{{ selectedProduct?.name }}"</span>?
+                                This action cannot be undone and the product will be permanently removed from your inventory.
+                            </DialogDescription>
+                        </div>
+                    </div>
                 </DialogHeader>
-                <DialogFooter>
-                    <Button variant="outline" @click="deleteDialogOpen = false">
+                <DialogFooter class="mt-6 gap-3 sm:gap-2">
+                    <Button
+                        variant="outline"
+                        @click="deleteDialogOpen = false"
+                        class="flex-1 sm:flex-initial"
+                    >
                         Cancel
                     </Button>
                     <Button
                         variant="destructive"
                         @click="handleDelete"
                         :disabled="deleting"
+                        class="flex-1 sm:flex-initial bg-red-600 hover:bg-red-700 text-white shadow-sm"
                     >
-                        {{ deleting ? 'Deleting...' : 'Delete' }}
+                        <Trash2 v-if="!deleting" class="w-4 h-4 mr-2" />
+                        {{ deleting ? 'Deleting...' : 'Delete Product' }}
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -170,6 +187,7 @@ import DialogHeader from '@/components/ui/DialogHeader.vue';
 import DialogTitle from '@/components/ui/DialogTitle.vue';
 import DialogDescription from '@/components/ui/DialogDescription.vue';
 import DialogFooter from '@/components/ui/DialogFooter.vue';
+import { AlertTriangle, Trash2 } from 'lucide-vue-next';
 
 const props = defineProps({
     products: Object,
@@ -185,13 +203,19 @@ const handleSearch = () => {
     router.get(
         route('products.index'),
         { search: search.value },
-        { preserveState: true, replace: true }
+        {
+            preserveScroll: true,
+            replace: true
+        }
     );
 };
 
 const clearSearch = () => {
     search.value = '';
-    router.get(route('products.index'), {}, { preserveState: true, replace: true });
+    router.get(route('products.index'), {}, {
+        preserveScroll: true,
+        replace: true
+    });
 };
 
 const openDeleteDialog = (product) => {
@@ -212,8 +236,8 @@ const handleDelete = () => {
     });
 };
 
-// Helper function for routes (you might want to use ziggy or define routes differently)
-const route = (name, params = {}) => {
+// Helper function for routes
+const route = (name, params = null) => {
     const routes = {
         'products.index': '/products',
         'products.create': '/products/create',

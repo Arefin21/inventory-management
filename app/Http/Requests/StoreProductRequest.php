@@ -27,7 +27,7 @@ class StoreProductRequest extends FormRequest
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ];
     }
 
@@ -49,7 +49,7 @@ class StoreProductRequest extends FormRequest
             'stock.integer' => 'Stock must be a whole number.',
             'stock.min' => 'Stock cannot be negative.',
             'image.image' => 'The file must be an image.',
-            'image.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif.',
+            'image.mimes' => 'The image must be a file of type: jpeg, png, jpg, gif, webp.',
             'image.max' => 'The image may not be greater than 2MB.',
         ];
     }

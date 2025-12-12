@@ -18,10 +18,10 @@
                     type="text"
                     required
                     class="mt-1"
-                    :class="{ 'border-red-500': errors.name }"
+                    :class="{ 'border-red-500': form.errors.name }"
                 />
-                <p v-if="errors.name" class="mt-1 text-sm text-red-500">
-                    {{ errors.name }}
+                <p v-if="form.errors.name" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.name }}
                 </p>
             </div>
 
@@ -34,10 +34,10 @@
                     type="text"
                     required
                     class="mt-1"
-                    :class="{ 'border-red-500': errors.sku }"
+                    :class="{ 'border-red-500': form.errors.sku }"
                 />
-                <p v-if="errors.sku" class="mt-1 text-sm text-red-500">
-                    {{ errors.sku }}
+                <p v-if="form.errors.sku" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.sku }}
                 </p>
             </div>
 
@@ -52,10 +52,10 @@
                     min="0"
                     required
                     class="mt-1"
-                    :class="{ 'border-red-500': errors.price }"
+                    :class="{ 'border-red-500': form.errors.price }"
                 />
-                <p v-if="errors.price" class="mt-1 text-sm text-red-500">
-                    {{ errors.price }}
+                <p v-if="form.errors.price" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.price }}
                 </p>
             </div>
 
@@ -69,10 +69,10 @@
                     min="0"
                     required
                     class="mt-1"
-                    :class="{ 'border-red-500': errors.stock }"
+                    :class="{ 'border-red-500': form.errors.stock }"
                 />
-                <p v-if="errors.stock" class="mt-1 text-sm text-red-500">
-                    {{ errors.stock }}
+                <p v-if="form.errors.stock" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.stock }}
                 </p>
             </div>
 
@@ -84,10 +84,10 @@
                     v-model="form.description"
                     rows="4"
                     class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    :class="{ 'border-red-500': errors.description }"
+                    :class="{ 'border-red-500': form.errors.description }"
                 ></textarea>
-                <p v-if="errors.description" class="mt-1 text-sm text-red-500">
-                    {{ errors.description }}
+                <p v-if="form.errors.description" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.description }}
                 </p>
             </div>
 
@@ -109,16 +109,16 @@
                 <Input
                     id="image"
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                     @change="handleImageChange"
                     class="mt-1"
-                    :class="{ 'border-red-500': errors.image }"
+                    :class="{ 'border-red-500': form.errors.image }"
                 />
-                <p v-if="errors.image" class="mt-1 text-sm text-red-500">
-                    {{ errors.image }}
+                <p v-if="form.errors.image" class="mt-1 text-sm text-red-500">
+                    {{ form.errors.image }}
                 </p>
                 <p class="mt-1 text-sm text-muted-foreground">
-                    Accepted formats: JPEG, PNG, JPG, GIF. Max size: 2MB
+                    Accepted formats: JPEG, PNG, JPG, GIF, WEBP. Max size: 2MB
                 </p>
                 <div v-if="imagePreview" class="mt-4">
                     <p class="text-sm text-muted-foreground mb-2">New Image Preview:</p>
@@ -132,8 +132,8 @@
 
             <!-- Form Actions -->
             <div class="flex gap-4">
-                <Button type="submit" :disabled="processing">
-                    {{ processing ? 'Updating...' : 'Update Product' }}
+                <Button type="submit" :disabled="form.processing">
+                    {{ form.processing ? 'Updating...' : 'Update Product' }}
                 </Button>
                 <Button
                     type="button"
@@ -166,11 +166,9 @@ const form = useForm({
     stock: props.product.stock,
     description: props.product.description || '',
     image: null,
-    _method: 'PUT',
 });
 
 const imagePreview = ref(null);
-const processing = ref(false);
 
 const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -186,12 +184,12 @@ const handleImageChange = (event) => {
 };
 
 const submit = () => {
-    processing.value = true;
-    form.post(route('products.update', props.product.id), {
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(route('products.update', props.product.id), {
         forceFormData: true,
-        onFinish: () => {
-            processing.value = false;
-        },
+        preserveScroll: true,
     });
 };
 

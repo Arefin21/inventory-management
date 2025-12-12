@@ -24,7 +24,7 @@ class ProductController extends Controller
         $query = Product::query();
 
         // Search functionality
-        if ($request->has('search') && $request->search) {
+        if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -62,10 +62,18 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
 
+        // Convert price and stock to proper types
+        $validated['price'] = (float) $validated['price'];
+        $validated['stock'] = (int) $validated['stock'];
+
         // Handle image upload using Service class
-        $validated['image'] = $this->productService->handleImageUpload(
-            $request->file('image')
-        );
+        if ($request->hasFile('image')) {
+            $validated['image'] = $this->productService->handleImageUpload(
+                $request->file('image')
+            );
+        } else {
+            unset($validated['image']);
+        }
 
         Product::create($validated);
 
@@ -93,11 +101,20 @@ class ProductController extends Controller
     {
         $validated = $request->validated();
 
+        // Convert price and stock to proper types
+        $validated['price'] = (float) $validated['price'];
+        $validated['stock'] = (int) $validated['stock'];
+
         // Handle image upload using Service class
-        $validated['image'] = $this->productService->handleImageUpload(
-            $request->file('image'),
-            $product->image
-        );
+        if ($request->hasFile('image')) {
+            $validated['image'] = $this->productService->handleImageUpload(
+                $request->file('image'),
+                $product->image
+            );
+        } else {
+            // Don't update image if no new image is uploaded
+            unset($validated['image']);
+        }
 
         $product->update($validated);
 
